@@ -1,5 +1,6 @@
 data.cxx
 data.h
+fcn.h
 nn.cxx
 nn.h
 run.cxx

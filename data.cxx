@@ -4,6 +4,7 @@
 #include <TGraph.h>
 #include <TCanvas.h>
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TStyle.h>
 
 ZData::ZData()
@@ -12,7 +13,8 @@ ZData::ZData()
   X2 = 0.0;
   Y = 0.0;
   Origin = -1;
-  Type = -1;
+  Prediction = -1;
+  Sample = -1;
 }
 
 std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal, const double fractionValid)
@@ -23,6 +25,7 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
   std::normal_distribution<double> distrSigX2(MeanSigX2);
   std::normal_distribution<double> distrBkgX1(MeanBkgX1);
   std::normal_distribution<double> distrBkgX2(MeanBkgX2);
+  std::uniform_real_distribution<double> distrUniform(0.0,1.0);
 
   std::vector<ZData>* vData = new std::vector<ZData>(n);
   for(int i = 0; i < n; i++)
@@ -42,10 +45,11 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
       data.X2 = distrBkgX2(generator);
       data.Origin = 0;
     }
-    if(fractionValid * n < i)
-      data.Type = 1;
+    double valid = distrUniform(generator);
+    if(fractionValid < valid)
+      data.Sample = 1;
     else
-      data.Type = 0;
+      data.Sample = 0;
   }
 
   // draw data
@@ -152,27 +156,70 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
   return vData;
 }
 
-void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileName)
+void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN)
 {
+  gStyle->SetOptStat(0000000000);
+
   TGraph* grSig = new TGraph;
   grSig->SetMarkerColor(2);
   grSig->SetMarkerStyle(20);
   grSig->SetMarkerSize(0.35);
+
   TGraph* grBkg = new TGraph;
   grBkg->SetMarkerColor(4);
   grBkg->SetMarkerStyle(20);
   grBkg->SetMarkerSize(0.35);
+
+  TGraph* grSigWrong = new TGraph;
+  grSigWrong->SetMarkerColor(kRed - 6);
+  grSigWrong->SetMarkerStyle(20);
+  grSigWrong->SetMarkerSize(0.35);
+
+  TGraph* grBkgWrong = new TGraph;
+  grBkgWrong->SetMarkerColor(kBlue - 6);
+  grBkgWrong->SetMarkerStyle(20);
+  grBkgWrong->SetMarkerSize(0.35);
+
+  double xMin = 0.0;
+  double xMax = 0.0;
+  double yMin = 0.0;
+  double yMax = 0.0;
   for(size_t i = 0; i < vData->size(); i++)
   {
     const ZData& data = (*vData)[i];
+    if(xMin > data.X1)
+      xMin = data.X1;
+    if(xMax < data.X1)
+      xMax = data.X1;
+    if(yMin > data.X2)
+      yMin = data.X2;
+    if(yMax < data.X2)
+      yMax = data.X2;
     if(data.Origin == 1)
-      grSig->SetPoint(grSig->GetN(), data.X1, data.X2);
+    {
+      if(!flagNN || data.Prediction == data.Origin)
+        grSig->SetPoint(grSig->GetN(), data.X1, data.X2);
+      else
+        grSigWrong->SetPoint(grSigWrong->GetN(), data.X1, data.X2);
+    }
     else
-      grBkg->SetPoint(grBkg->GetN(), data.X1, data.X2);
+    {
+      if(!flagNN || data.Prediction == data.Origin)
+        grBkg->SetPoint(grBkg->GetN(), data.X1, data.X2);
+      else
+        grBkgWrong->SetPoint(grBkgWrong->GetN(), data.X1, data.X2);
+    }
   }
   TCanvas* c = new TCanvas("", "", 600, 600);
-  grSig->Draw("ap");
+  TH2D* hr = new TH2D("", "", 1, xMin, xMax, 1, yMin, yMax);
+  hr->Draw();
+  grSig->Draw("p");
   grBkg->Draw("p");
+  if(flagNN)
+  {
+    grSigWrong->Draw("p");
+    grBkgWrong->Draw("p");
+  }
   c->SaveAs((fileName + std::string(".pdf")).c_str());
   c->SaveAs((fileName + std::string(".png")).c_str());
 }
