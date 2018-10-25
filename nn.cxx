@@ -2,6 +2,7 @@
 #include "data.h"
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 #include <TF2.h>
 
 ZNN::ZNN()
@@ -27,25 +28,30 @@ double ZNN::activation(const double x)
   return y;
 }
 
-double ZNN::Compute(const double x1, const double x2)
+double ZNN::Compute(const std::vector<double>& x)
 {
-  double y11 = zvWeight[0] * x1 + zvWeight[1] * x2;
-  double y12 = zvWeight[2] * x1 + zvWeight[3] * x2;
+  assert(x.size() == zN);
+  std::vector<double> y(zN);
+  for(int i = 0; i < zN; i++)
+  {
+    for(int j = 0; j < zN; j++)
+      y[i] += zvWeight[i * zN + j] * x[j];
+    y[i] += zvBias[i];
+    y[i] = activation(y[i]);
+  }
 
-  y11 += zvBias[0];
-  y12 += zvBias[1];
+  double y2 = 0.0;
+  for(int i = 0; i < zN; i++)
+  {
+    y2 += zvWeight[zN * zN + i] * y[i];
+  }
+  y2 += zvBias[zN];
+  y2 = activation(y2);
 
-  y11 = activation(y11);
-  y12 = activation(y12);
+  //if(zFlagDebug)
+  //  printf("x1 = %f  x2 = %f    y = %f\n", x[0], x[1], y2);
 
-  double y22 = zvWeight[4] * y11 + zvWeight[5] * y12;
-  y22 += zvBias[2];
-  y22 = activation(y22);
-
-  if(zFlagDebug)
-    printf("x1 = %f  x2 = %f    y = %f\n", x1, x2, y22);
-
-  return y22;
+  return y2;
 }
 
 double ZNN::Compute(std::vector<ZData>* vData)
@@ -53,7 +59,7 @@ double ZNN::Compute(std::vector<ZData>* vData)
   for(size_t i = 0; i < vData->size(); i++)
   {
     ZData& data = (*vData)[i];
-    data.Y = Compute(data.X1, data.X2);
+    data.Y = Compute(data.X);
     if(data.Y < zCutY)
       data.Prediction = 0;
     else
@@ -90,7 +96,7 @@ std::vector<std::pair<double, double> > ZNN::GetBorder(const int n, const double
     for(int iy = 0; iy <= n; iy++)
     {
       double y = minY + (maxY - minY) * iy / n;
-      double diff = fabs(Compute(x, y) - zCutY);
+      double diff = fabs(Compute({ x, y }) - zCutY);
       //printf("diff = %f\n", diff);
       if(diff < diffMin)
       {
@@ -108,7 +114,7 @@ std::vector<std::pair<double, double> > ZNN::GetBorder(const int n, const double
 ZNN* gNNTF2(NULL);
 double myFunc(double* x, double* par)
 {
-  double val = gNNTF2->Compute(x[0], x[1]) - gNNTF2->GetCutY();
+  double val = gNNTF2->Compute({ x[0], x[1] }) - gNNTF2->GetCutY();
   if(val > 0.0)
     val = 5.0;
   else
@@ -118,6 +124,7 @@ double myFunc(double* x, double* par)
 
 TF2* ZNN::GetFunction(const std::vector<ZData>* vData)
 {
+  assert(zN == 2);
   double minX = 0.0;
   double maxX = 0.0;
   double minY = 0.0;
@@ -125,14 +132,14 @@ TF2* ZNN::GetFunction(const std::vector<ZData>* vData)
   for(size_t i = 0; i < vData->size(); i++)
   {
     const ZData& data = (*vData)[i];
-    if(data.X1 < minX)
-      minX = data.X1;
-    if(data.X1 > maxX)
-      maxX = data.X1;
-    if(data.X2 < minY)
-      minY = data.X2;
-    if(data.X2 > maxY)
-      maxY = data.X2;
+    if(data.X[0] < minX)
+      minX = data.X[0];
+    if(data.X[0] > maxX)
+      maxX = data.X[0];
+    if(data.X[1] < minY)
+      minY = data.X[1];
+    if(data.X[1] > maxY)
+      maxY = data.X[1];
   }
   gNNTF2 = this;
   TF2* f = new TF2("", myFunc, minX, maxX, minY, maxY);

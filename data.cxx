@@ -10,15 +10,15 @@
 
 ZData::ZData()
 {
-  X1 = 0.0;
-  X2 = 0.0;
+  //X1 = 0.0;
+  //X2 = 0.0;
   Y = 0.0;
   Origin = -1;
   Prediction = -1;
   Sample = -1;
 }
 
-std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal, const double fractionValid)
+std::vector<ZData>* ZData::GenerateDataGaus2(const int n, const double fractionSignal, const double fractionValid)
 {
   const int seed = 42;
   std::default_random_engine generator(seed);
@@ -32,18 +32,19 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
   for(int i = 0; i < n; i++)
   {
     ZData& data = (*vData)[i];
+    data.X.resize(2);
     if(fractionSignal * n < i)
     {
       // signal
-      data.X1 = distrSigX1(generator);
-      data.X2 = distrSigX2(generator);
+      data.X[0] = distrSigX1(generator);
+      data.X[1] = distrSigX2(generator);
       data.Origin = 1;
     }
     else
     {
       // background
-      data.X1 = distrBkgX1(generator);
-      data.X2 = distrBkgX2(generator);
+      data.X[0] = distrBkgX1(generator);
+      data.X[1] = distrBkgX2(generator);
       data.Origin = 0;
     }
     double valid = distrUniform(generator);
@@ -70,30 +71,30 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
       const ZData& data = (*vData)[i];
       if(data.Origin == 1)
       {
-        double number = data.X1;
+        double number = data.X[0];
         if((number >= min) && (number < max))
           ++pSigX1[int(number - min)];
         //printf("number = %f -> %d\n", number, int(number - min));
 
-        number = data.X2;
+        number = data.X[0];
         if((number >= min) && (number < max))
           ++pSigX2[int(number - min)];
 
-        number = sqrt(data.X1 * data.X1 + data.X2 * data.X2);
+        number = sqrt(data.X[0] * data.X[0] + data.X[1] * data.X[1]);
         if((number >= min) && (number < max))
           ++pSigR[int(number - min)];
       }
       else
       {
-        double number = data.X1;
+        double number = data.X[0];
         if((number >= min) && (number < max))
           ++pBkgX1[int(number - min)];
 
-        number = data.X2;
+        number = data.X[1];
         if((number >= min) && (number < max))
           ++pBkgX2[int(number - min)];
 
-        number = sqrt(data.X1 * data.X1 + data.X2 * data.X2);
+        number = sqrt(data.X[0] * data.X[0] + data.X[1] * data.X[1]);
         if((number >= min) && (number < max))
           ++pBkgR[int(number - min)];
       }
@@ -197,27 +198,27 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
   for(size_t i = 0; i < vData->size(); i++)
   {
     const ZData& data = (*vData)[i];
-    if(xMin > data.X1)
-      xMin = data.X1;
-    if(xMax < data.X1)
-      xMax = data.X1;
-    if(yMin > data.X2)
-      yMin = data.X2;
-    if(yMax < data.X2)
-      yMax = data.X2;
+    if(xMin > data.X[0])
+      xMin = data.X[0];
+    if(xMax < data.X[1])
+      xMax = data.X[1];
+    if(yMin > data.X[1])
+      yMin = data.X[1];
+    if(yMax < data.X[1])
+      yMax = data.X[1];
     if(data.Origin == 1)
     {
       if(!flagNN || data.Prediction == data.Origin)
-        grSig->SetPoint(grSig->GetN(), data.X1, data.X2);
+        grSig->SetPoint(grSig->GetN(), data.X[0], data.X[1]);
       else
-        grSigWrong->SetPoint(grSigWrong->GetN(), data.X1, data.X2);
+        grSigWrong->SetPoint(grSigWrong->GetN(), data.X[0], data.X[1]);
     }
     else
     {
       if(!flagNN || data.Prediction == data.Origin)
-        grBkg->SetPoint(grBkg->GetN(), data.X1, data.X2);
+        grBkg->SetPoint(grBkg->GetN(), data.X[0], data.X[1]);
       else
-        grBkgWrong->SetPoint(grBkgWrong->GetN(), data.X1, data.X2);
+        grBkgWrong->SetPoint(grBkgWrong->GetN(), data.X[0], data.X[1]);
     }
   }
   TCanvas* c = new TCanvas("", "", 600, 600);

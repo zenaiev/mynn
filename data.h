@@ -10,8 +10,7 @@ class ZData
 {
   public:
     ZData();
-    double X1;
-    double X2;
+    std::vector<double> X;
     double Y;
     int Origin; // 0 bkg, 1 sig
     int Prediction; // 0 bkg, 1 sig
@@ -23,7 +22,7 @@ class ZData
     static constexpr double MeanBkgX2 = -1.0;
     static constexpr double RMS = 1.0;
 
-    static std::vector<ZData>* GenerateData(const int n, const double fractionSignal = 0.5, const double fractionValid = 0.5);
+    static std::vector<ZData>* GenerateDataGaus2(const int n, const double fractionSignal = 0.5, const double fractionValid = 0.5);
     static void DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN = false, const std::vector<std::pair<double, double> >* border = NULL, TF2* f = NULL);
     static void DrawNNY(const std::vector<ZData>* vData, const std::string& fileName);
 };

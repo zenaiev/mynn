@@ -7,6 +7,7 @@
 int main(int argc, char** argv)
 {
   ZNN* nn = new ZNN();
+  nn->SetN(2);
 
   double x1 = 2.5;
   double x2 = -1.5;
@@ -20,7 +21,7 @@ int main(int argc, char** argv)
 
   // generate data
   const int dataN = 25000;
-  std::vector<ZData>* vData = ZData::GenerateData(dataN);
+  std::vector<ZData>* vData = ZData::GenerateDataGaus2(dataN);
   ZData::DrawData(vData, "plots/data");
   //std::vector<std::> dataX(dataN);
 
