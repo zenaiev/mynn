@@ -6,6 +6,7 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TStyle.h>
+#include <TF2.h>
 
 ZData::ZData()
 {
@@ -156,9 +157,10 @@ std::vector<ZData>* ZData::GenerateData(const int n, const double fractionSignal
   return vData;
 }
 
-void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN)
+void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN, const std::vector<std::pair<double, double> >* border, TF2* f)
 {
   gStyle->SetOptStat(0000000000);
+  gStyle->SetPalette(3);
 
   TGraph* grSig = new TGraph;
   grSig->SetMarkerColor(2);
@@ -179,6 +181,14 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
   grBkgWrong->SetMarkerColor(kBlue - 6);
   grBkgWrong->SetMarkerStyle(20);
   grBkgWrong->SetMarkerSize(0.35);
+
+  TGraph* grBorder = NULL;
+  if(border)
+  {
+    grBorder = new TGraph;
+    for(size_t i = 0; i < border->size(); i++)
+      grBorder->SetPoint(grBorder->GetN(), (*border)[i].first, (*border)[i].second);
+  }
 
   double xMin = 0.0;
   double xMax = 0.0;
@@ -213,6 +223,12 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
   TCanvas* c = new TCanvas("", "", 600, 600);
   TH2D* hr = new TH2D("", "", 1, xMin, xMax, 1, yMin, yMax);
   hr->Draw();
+  if(f)
+  {
+    f->SetNpx(250);
+    f->SetNpy(250);
+    f->Draw("col");
+  }
   grSig->Draw("p");
   grBkg->Draw("p");
   if(flagNN)
@@ -220,6 +236,8 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
     grSigWrong->Draw("p");
     grBkgWrong->Draw("p");
   }
+  //if(grBorder)
+  //  grBorder->Draw("c");
   c->SaveAs((fileName + std::string(".pdf")).c_str());
   c->SaveAs((fileName + std::string(".png")).c_str());
 }

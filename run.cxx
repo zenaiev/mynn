@@ -36,7 +36,10 @@ int main(int argc, char** argv)
   // calculate success
   double success = nn->Success(vData, -1);
   printf("success: %f\n", success);
-  ZData::DrawData(vData, "plots/data-start", true);
+  //std::vector<std::pair<double, double> > border = nn->GetBorder(100, -6.0, 6.0, -6.0, 6.0);
+  //gNNTF2 = nn;
+  TF2* f = nn->GetFunction(vData);
+  ZData::DrawData(vData, "plots/data-start", true, NULL, f);
 
   // minimise fcn
   gNN = nn;
@@ -97,7 +100,9 @@ int main(int argc, char** argv)
   printf("success: %f\n", nn->Success(vData, -1));
   printf("success[train]: %f\n", nn->Success(vData, 0));
   printf("success[valid]: %f\n", nn->Success(vData, 1));
-  ZData::DrawData(vData, "plots/data-final", true);
+  //border = nn->GetBorder(100, -6.0, 6.0, -6.0, 6.0);
+  f = nn->GetFunction(vData);
+  ZData::DrawData(vData, "plots/data-final", true, NULL, f);
 
   return 0;
 }

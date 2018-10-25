@@ -3,6 +3,7 @@
 
 #include <vector>
 class ZData;
+class TF2;
 
 class ZNN
 {
@@ -28,6 +29,9 @@ class ZNN
     double Compute(const double x1, const double x2);
     double Compute(std::vector<ZData>* vData);
     double Success(const std::vector<ZData>* vData, const int flagSample);
+
+    std::vector<std::pair<double, double> > GetBorder(const int n, const double minX, const double maxX, const double minY, const double maxY);
+    TF2* GetFunction(const std::vector<ZData>* vData);
 };
 
 #endif // ZNN_H

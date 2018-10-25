@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+class TF2;
+
 class ZData
 {
   public:
@@ -22,7 +24,7 @@ class ZData
     static constexpr double RMS = 1.0;
 
     static std::vector<ZData>* GenerateData(const int n, const double fractionSignal = 0.5, const double fractionValid = 0.5);
-    static void DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN = false);
+    static void DrawData(const std::vector<ZData>* vData, const std::string& fileName, bool flagNN = false, const std::vector<std::pair<double, double> >* border = NULL, TF2* f = NULL);
     static void DrawNNY(const std::vector<ZData>* vData, const std::string& fileName);
 };
 
