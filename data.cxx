@@ -200,8 +200,8 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
     const ZData& data = (*vData)[i];
     if(xMin > data.X[0])
       xMin = data.X[0];
-    if(xMax < data.X[1])
-      xMax = data.X[1];
+    if(xMax < data.X[0])
+      xMax = data.X[0];
     if(yMin > data.X[1])
       yMin = data.X[1];
     if(yMax < data.X[1])
@@ -221,6 +221,7 @@ void ZData::DrawData(const std::vector<ZData>* vData, const std::string& fileNam
         grBkgWrong->SetPoint(grBkgWrong->GetN(), data.X[0], data.X[1]);
     }
   }
+  //printf("xMin,xMax,yMin,yMax: %f %f %f %f\n", xMin, xMax, yMin, yMax);
   TCanvas* c = new TCanvas("", "", 600, 600);
   TH2D* hr = new TH2D("", "", 1, xMin, xMax, 1, yMin, yMax);
   hr->Draw();

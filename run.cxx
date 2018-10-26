@@ -8,9 +8,19 @@ int main(int argc, char** argv)
 {
   ZNN* nn = new ZNN();
   nn->SetN(2);
+  nn->SetWeight(1, 0.9);
+  nn->SetWeight(2, 0.7);
+  nn->SetWeight(3, 1.5);
+  nn->SetWeight(4, 0.6);
+  nn->SetWeight(5, -0.4);
+  nn->SetWeight(6, 0.9);
+  nn->SetBias(1, -0.1);
+  nn->SetBias(2, 0.2);
+  nn->SetBias(3, -0.4);
+  nn->SetCutY(0.1);
 
-  double x1 = 2.5;
-  double x2 = -1.5;
+  //double x1 = 2.5;
+  //double x2 = -1.5;
   //double y = nn->Compute(x1, x2);
   //printf("x1 = %f  x2 = %f    y = %f\n", x1, x2, y);
 

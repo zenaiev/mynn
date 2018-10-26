@@ -8,7 +8,7 @@
 ZNN::ZNN()
 {
   zFlagDebug = 0;
-  zvWeight = std::vector<double>(6, -1.5);
+  /*zvWeight = std::vector<double>(6, -1.5);
   zvBias = std::vector<double>(3, 2.9);
   zvWeight[0] = 0.9;
   zvWeight[1] = 0.7;
@@ -19,12 +19,14 @@ ZNN::ZNN()
   zvBias[0] = -0.1;
   zvBias[1] = 0.2;
   zvBias[2] = -0.4;
-  zCutY = 0.1;
+  zCutY = 0.1;*/
 }
 
 double ZNN::activation(const double x)
 {
   double y = tanh(x);
+  //double y = (x > 0.0) ? x : 0.0;
+  //double y = x * x;
   return y;
 }
 
@@ -49,7 +51,7 @@ double ZNN::Compute(const std::vector<double>& x)
   y2 = activation(y2);
 
   //if(zFlagDebug)
-  //  printf("x1 = %f  x2 = %f    y = %f\n", x[0], x[1], y2);
+  //printf("x1 = %f  x2 = %f    y = %f\n", x[0], x[1], y2);
 
   return y2;
 }
@@ -83,6 +85,23 @@ double ZNN::Success(const std::vector<ZData>* vData, const int flagSample)
   double success = 1.0 * nSuccess / nCheck;
   //printf("success: %f\n", success);
   return success;
+}
+
+void ZNN::PrintPars()
+{
+  printf(">>>>>>>>>>> parameters: >>>>>>>>>>>>>>\n");
+  for(size_t i = 0; i < zvWeight.size(); i++)
+  {
+    //assert(zvWeight[i] != 0.0);
+    printf("weight[%lu] = %f\n", i, zvWeight[i]);
+  }
+  for(size_t i = 0; i < zvBias.size(); i++)
+  {
+    //assert(zvBias[i] != 0.0);
+    printf("bias[%lu] = %f\n", i, zvBias[i]);
+  }
+  //assert(zCutY != 0.0);
+  printf("cut = %f\n", zCutY);
 }
 
 std::vector<std::pair<double, double> > ZNN::GetBorder(const int n, const double minX, const double maxX, const double minY, const double maxY)

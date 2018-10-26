@@ -3,4 +3,5 @@ data.h
 fcn.h
 nn.cxx
 nn.h
+run-titanic.cxx
 run.cxx
